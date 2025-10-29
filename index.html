@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cacalendario 💩</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuente Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .radio-custom:checked + label {
+            background-color: #78350f; /* amber-900 */
+            color: white;
+            border-color: #78350f; /* amber-900 */
+        }
+    </style>
+</head>
+<body class="bg-amber-50 flex items-center justify-center min-h-screen p-4">
+
+    <main class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+        <!-- Título de la App -->
+        <h1 class="text-5xl font-bold text-amber-800">
+            Cacalendario
+        </h1>
+        <p class="text-lg text-gray-600 mt-2 mb-8">
+            Tu registro de bienestar intestinal.
+        </p>
+
+        <!-- Botón Principal de Registro -->
+        <button id="logButton" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-3xl py-8 px-10 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-amber-300">
+            Registrar 💩
+        </button>
+
+        <!-- Botón para abrir modal de detalles -->
+        <button id="detailsButton" class="mt-6 text-amber-700 hover:text-amber-900 font-semibold hover:underline transition-colors">
+            Añadir detalles (opcional)
+        </button>
+
+        <!-- Área de Mensajes (para consejos o último registro) -->
+        <div id="messageArea" class="mt-8 p-4 rounded-lg text-sm">
+            <!-- El contenido se cargará con JavaScript -->
+        </div>
+    </main>
+
+    <!-- Modal para Añadir Detalles -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm transform transition-all scale-95 opacity-0" id="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">¿Cómo fue?</h2>
+                <button id="closeModalButton" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
+            
+            <!-- Opciones de Tipo de Deposición -->
+            <div class="mb-4">
+                <p class="font-semibold text-gray-700 mb-2 text-left">Tipo:</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <input type="radio" name="stoolType" id="type-dry" value="Seca" class="sr-only radio-custom">
+                        <label for="type-dry" class="block border-2 border-gray-200 rounded-lg p-3 text-center cursor-pointer transition-all hover:border-amber-800">Seca</label>
+                    </div>
+                    <div>
+                        <input type="radio" name="stoolType" id="type-normal" value="Normal" class="sr-only radio-custom" checked>
+                        <label for="type-normal" class="block border-2 border-gray-200 rounded-lg p-3 text-center cursor-pointer transition-all hover:border-amber-800">Normal</label>
+                    </div>
+                    <div>
+                        <input type="radio" name="stoolType" id="type-liquid" value="Líquida" class="sr-only radio-custom">
+                        <label for="type-liquid" class="block border-2 border-gray-200 rounded-lg p-3 text-center cursor-pointer transition-all hover:border-amber-800">Líquida</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notas Adicionales -->
+            <div class="mb-6">
+                <label for="notes" class="block font-semibold text-gray-700 mb-2 text-left">Notas:</label>
+                <textarea id="notes" rows="3" class="w-full border-2 border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent" placeholder="Ej: color, sensación..."></textarea>
+            </div>
+
+            <!-- Botón de Guardar Detalles -->
+            <button id="saveDetailsButton" class="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                Guardar Detalles
+            </button>
+        </div>
+    </div>
+
+    <!-- Script Principal de la Aplicación -->
+    <script>
+        // --- 1. Seleccionar Elementos del DOM ---
+        const logButton = document.getElementById('logButton');
+        const detailsButton = document.getElementById('detailsButton');
+        const messageArea = document.getElementById('messageArea');
+        
+        // --- Modal ---
+        const modal = document.getElementById('modal');
+        const modalContent = document.getElementById('modal-content');
+        const closeModalButton = document.getElementById('closeModalButton');
+        const saveDetailsButton = document.getElementById('saveDetailsButton');
+        const notesTextarea = document.getElementById('notes');
+
+        // --- 2. Estado de la Aplicación ---
+        // Almacena los detalles temporalmente
+        let currentDetails = {
+            type: 'Normal',
+            notes: ''
+        };
+
+        // --- 3. Funciones del Modal ---
+        function openModal() {
+            document.querySelector(`input[name="stoolType"][value="${currentDetails.type}"]`).checked = true;
+            notesTextarea.value = currentDetails.notes;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function closeModal() {
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function saveDetails() {
+            const selectedType = document.querySelector('input[name="stoolType"]:checked').value;
+            currentDetails.type = selectedType;
+            currentDetails.notes = notesTextarea.value;
+            
+            detailsButton.textContent = 'Detalles guardados ✓';
+            setTimeout(() => {
+                detailsButton.textContent = 'Añadir detalles (opcional)';
+            }, 2000);
+            
+            closeModal();
+        }
+
+        // --- 4. Lógica Principal ---
+
+        /**
+         * *** FUNCIÓN MODIFICADA ***
+         * Genera un enlace de Google Calendar y lo DEVUELVE como string.
+         */
+        function generateGoogleCalendarLink(details) {
+            const now = new Date();
+            // Formato YYYYMMDD (para evento de todo el día)
+            const dateStr = now.toISOString().split('T')[0].replace(/-/g, '');
+            
+            // Crear la descripción del evento
+            let description = `Tipo: ${details.type}.`;
+            if (details.notes) {
+                // El enlace web prefiere \n para saltos de línea
+                description += `\nNotas: ${details.notes}`;
+            }
+
+            // --- Construcción del enlace ---
+            // URL base
+            const baseUrl = 'https://www.google.com/calendar/render?action=TEMPLATE';
+            
+            // Parámetros
+            const params = new URLSearchParams();
+            params.append('text', '💩 Registro de Cacalendario');
+            params.append('dates', `${dateStr}/${dateStr}`); // Formato YYYYMMDD/YYYYMMDD para evento de todo el día
+            params.append('details', description);
+            params.append('allDay', 'true'); // Indica que es un evento de todo el día
+            
+            const calendarUrl = `${baseUrl}&${params.toString()}`;
+
+            // Devolver el enlace en lugar de abrirlo
+            return calendarUrl;
+        }
+
+        /**
+         * Función principal llamada por el botón "Registrar 💩"
+         */
+        function logPoop() {
+            const now = new Date().toISOString();
+            
+            // 1. Guardar la hora del registro en el almacenamiento local
+            localStorage.setItem('lastPoopTime', now);
+            
+            // 2. *** CAMBIO: Generar el enlace ***
+            const calendarUrl = generateGoogleCalendarLink(currentDetails);
+            
+            // 3. Resetear los detalles
+            currentDetails = { type: 'Normal', notes: '' };
+            notesTextarea.value = '';
+            document.getElementById('type-normal').checked = true;
+            
+            // 4. Mostrar el mensaje de éxito y el enlace en el messageArea
+            messageArea.className = 'mt-8 p-4 rounded-lg text-sm bg-green-100 text-green-800 text-left shadow';
+            messageArea.innerHTML = `
+                <p class="font-bold">¡Registro guardado!</p>
+                <p class="mb-2">Tu último registro está listo. Haz clic abajo para añadirlo a tu calendario.</p>
+                <a href="${calendarUrl}" target="_blank" rel="noopener noreferrer" class="block w-full text-center mt-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                    Añadir a Google Calendar
+                </a>
+            `;
+            
+            // 5. Opcional: después de un tiempo, volver al estado normal
+            setTimeout(() => {
+                // Solo volvemos a comprobar si el usuario *no* está viendo el mensaje de 3 días
+                // (No queremos borrar el aviso de 3 días si aparece)
+                const lastLogTime = localStorage.getItem('lastPoopTime');
+                const lastLogDate = new Date(lastLogTime);
+                const nowDate = new Date();
+                const diffMs = nowDate.getTime() - lastLogDate.getTime();
+                const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+                if (diffDays < 3) {
+                     checkLastPoop(); // Volver al mensaje de "Último registro"
+                }
+            }, 15000); // 15 segundos
+        }
+
+        /**
+         * Función principal llamada por el botón "Registrar 💩"
+         */
+        function logPoop() {
+            const now = new Date().toISOString();
+            
+            // 1. Guardar la hora del registro en el almacenamiento local
+            localStorage.setItem('lastPoopTime', now);
+            
+            // 2. *** CAMBIO: Abrir el enlace de Google Calendar ***
+            openGoogleCalendarLink(currentDetails);
+            
+            // 3. Resetear los detalles
+            currentDetails = { type: 'Normal', notes: '' };
+            notesTextarea.value = '';
+            document.getElementById('type-normal').checked = true;
+            
+            // 4. Actualizar los mensajes en la UI
+            checkLastPoop();
+        }
+
+        /**
+         * Revisa el último registro y muestra consejos o estado.
+         */
+        function checkLastPoop() {
+            const lastLogTime = localStorage.getItem('lastPoopTime');
+            
+            if (!lastLogTime) {
+                messageArea.className = 'mt-8 p-4 rounded-lg text-sm bg-blue-100 text-blue-800';
+                messageArea.innerHTML = '¡Bienvenida! Presiona el botón 💩 para empezar tu primer registro.';
+                return;
+            }
+
+            const lastLogDate = new Date(lastLogTime);
+            const now = new Date();
+            
+            const diffMs = now.getTime() - lastLogDate.getTime();
+            const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+            if (diffDays >= 3) {
+                messageArea.className = 'mt-8 p-4 rounded-lg text-sm bg-red-100 text-red-800 text-left';
+                messageArea.innerHTML = `
+                    <p class="font-bold mb-2">¡Atención! Han pasado ${Math.floor(diffDays)} días.</p>
+                    <p>Aquí tienes algunos consejos para mover los intestinos:</p>
+                    <ul class="list-disc list-inside mt-1">
+                        <li>Bebe más agua.</li>
+                        <li>Come alimentos ricos en fibra (frutas, verduras, avena).</li>
+                        <li>Intenta moverte o caminar un poco.</li>
+                        <li>Establece una rutina para ir al baño.</li>
+                    </ul>
+                `;
+            } else {
+                messageArea.className = 'mt-8 p-4 rounded-lg text-sm text-gray-500';
+                messageArea.innerHTML = `Último registro: ${lastLogDate.toLocaleString('es-ES', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    hour: 'numeric', 
+                    minute: '2-digit' 
+                })}`;
+            }
+        }
+
+        // --- 5. Asignar Event Listeners ---
+        logButton.addEventListener('click', logPoop);
+        detailsButton.addEventListener('click', openModal);
+        closeModalButton.addEventListener('click', closeModal);
+        saveDetailsButton.addEventListener('click', saveDetails);
+
+        // --- 6. Ejecutar al Cargar la Página ---
+        window.addEventListener('load', checkLastPoop);
+
+    </script>
+</body>
+</html>
