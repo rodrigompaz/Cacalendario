@@ -50,13 +50,15 @@
         <div id="messageArea" class="mt-8 p-4 rounded-lg text-sm">
             <!-- El contenido se cargará con JavaScript -->
         </div>
+
+        <!-- Footer -->
+        <footer class="text-center pt-6 mt-6 border-t border-gray-200 text-gray-500 text-sm">
+            <p>&copy; <span id="copyright-year">2025</span> Cacalendario.</p>
+            <p>Un experimento de <a href="https://rodrigoseo.com" target="_blank" rel="noopener noreferrer" class="text-amber-700 hover:underline font-semibold">Rodrigo SEO</a>.</p>
+        </footer>
     </main>
 
-    <!-- Footer -->
-    <footer class="text-center pt-2 pb-6 text-gray-500 text-sm">
-        <p>&copy; <span id="copyright-year">2025</span> Cacalendario.</p>
-        <p>Un experimento de <a href="https://rodrigoseo.com" target="_blank" rel="noopener noreferrer" class="text-amber-700 hover:underline font-semibold">Rodrigo SEO</a>.</p>
-    </footer>
+    <!-- Footer (Eliminado de aquí fuera) -->
 
     <!-- Modal para Añadir Detalles -->
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden transition-opacity duration-300">
@@ -159,7 +161,20 @@
         function generateGoogleCalendarLink(details) {
             const now = new Date();
             // Formato YYYYMMDD (para evento de todo el día)
-            const dateStr = now.toISOString().split('T')[0].replace(/-/g, '');
+            // const dateStr = now.toISOString().split('T')[0].replace(/-/g, ''); // <-- ELIMINADO
+            
+            // --- NUEVO: Formato de fecha/hora UTC (YYYYMMDDTHHMMSSZ) ---
+            const endDate = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutos de duración
+
+            // Función para formatear a YYYYMMDDTHHMMSSZ (formato UTC)
+            const formatToUTC = (date) => {
+                // Quita milisegundos y añade 'Z' al final
+                return date.toISOString().split('.')[0].replace(/-|:/g, '') + 'Z';
+            };
+
+            const dateStartStr = formatToUTC(now);
+            const dateEndStr = formatToUTC(endDate);
+            // --- FIN NUEVO ---
             
             // Crear la descripción del evento
             let description = `Tipo: ${details.type}.`;
@@ -174,10 +189,11 @@
             
             // Parámetros
             const params = new URLSearchParams();
-            params.append('text', '💩 Registro de Cacalendario');
-            params.append('dates', `${dateStr}/${dateStr}`); // Formato YYYYMMDD/YYYYMMDD para evento de todo el día
+            params.append('text', 'Misión cumplida 💩'); // <-- Título actualizado
+            // params.append('dates', `${dateStr}/${dateStr}`); // Formato YYYYMMDD/YYYYMMDD para evento de todo el día <-- ELIMINADO
+            params.append('dates', `${dateStartStr}/${dateEndStr}`); // <-- NUEVO: Con hora de inicio y fin
             params.append('details', description);
-            params.append('allDay', 'true'); // Indica que es un evento de todo el día
+            // params.append('allDay', 'true'); // Indica que es un evento de todo el día <-- ELIMINADO
             
             const calendarUrl = `${baseUrl}&${params.toString()}`;
 
