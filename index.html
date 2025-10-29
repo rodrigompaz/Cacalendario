@@ -1,9 +1,13 @@
-<!DOCTYPE html>
-<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cacalendario 💩</title>
+    
+    <!-- Título SEO Actualizado -->
+    <title>Cacalendario 💩 | Registro de Salud Digestiva</title>
+    
+    <!-- Meta Descripción SEO -->
+    <meta name="description" content="Usa Cacalendario para llevar un registro fácil de tu salud digestiva. Con un solo botón, puedes anotar tus deposiciones y monitorizar tu bienestar intestinal.">
+    
     <!-- Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Fuente Inter -->
@@ -47,6 +51,12 @@
             <!-- El contenido se cargará con JavaScript -->
         </div>
     </main>
+
+    <!-- Footer -->
+    <footer class="text-center pt-2 pb-6 text-gray-500 text-sm">
+        <p>&copy; <span id="copyright-year">2025</span> Cacalendario.</p>
+        <p>Un experimento de <a href="https://rodrigoseo.com" target="_blank" rel="noopener noreferrer" class="text-amber-700 hover:underline font-semibold">Rodrigo SEO</a>.</p>
+    </footer>
 
     <!-- Modal para Añadir Detalles -->
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden transition-opacity duration-300">
@@ -219,27 +229,6 @@
         }
 
         /**
-         * Función principal llamada por el botón "Registrar 💩"
-         */
-        function logPoop() {
-            const now = new Date().toISOString();
-            
-            // 1. Guardar la hora del registro en el almacenamiento local
-            localStorage.setItem('lastPoopTime', now);
-            
-            // 2. *** CAMBIO: Abrir el enlace de Google Calendar ***
-            openGoogleCalendarLink(currentDetails);
-            
-            // 3. Resetear los detalles
-            currentDetails = { type: 'Normal', notes: '' };
-            notesTextarea.value = '';
-            document.getElementById('type-normal').checked = true;
-            
-            // 4. Actualizar los mensajes en la UI
-            checkLastPoop();
-        }
-
-        /**
          * Revisa el último registro y muestra consejos o estado.
          */
         function checkLastPoop() {
@@ -287,8 +276,16 @@
         saveDetailsButton.addEventListener('click', saveDetails);
 
         // --- 6. Ejecutar al Cargar la Página ---
-        window.addEventListener('load', checkLastPoop);
+        window.addEventListener('load', () => {
+            checkLastPoop();
+            // Añadir año dinámico al footer
+            try {
+                document.getElementById('copyright-year').textContent = new Date().getFullYear();
+            } catch (e) {
+                console.warn("Could not set copyright year.");
+            }
+        });
 
     </script>
 </body>
-</html>
+
